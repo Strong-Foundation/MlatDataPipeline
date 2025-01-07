@@ -1,18 +1,37 @@
-# Use Ubuntu as the base image
-FROM ubuntu:latest
+# Use the latest Debian image as the base
+FROM debian:latest
 
-# Update the package list and install Go
+# Update package list and install dependencies
 RUN apt-get update && \
-    apt-get install golang -y
+    apt-get install python3-pip -y && \
+    apt-get install python3-dev -y && \
+    apt-get install curl -y && \
+    apt-get install python3-venv -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Set the working directory
-WORKDIR /parse_adsb_messages
+# Create a virtual environment
+RUN python3 -m venv /venv
 
-# Copy the parser file to the container
-COPY main.go /parse_adsb_messages/
+# Upgrade pip inside the virtual environment
+RUN /venv/bin/pip install --upgrade pip
 
-# Build the application
-RUN go build .
+# Install JupyterLab inside the virtual environment
+RUN /venv/bin/pip install --no-cache-dir jupyterlab
 
-# Run the application
-CMD ["./parse_adsb_messages"]
+# Expose port 8888 for JupyterLab
+EXPOSE 8888
+
+# Set the working directory (optional)
+WORKDIR /mlat_message_decoder
+
+# Copy the test data and the source code into the container
+COPY adsb_raw_data.txt .
+
+# Start JupyterLab using the virtual environment
+CMD ["/venv/bin/jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
+
+# Build the Docker image and run the container
+# docker build -t jupyterlab-debian-latest .
+# Run the container and map the host port 8888 to the container port 8888
+# docker run -d -p 8888:8888 --name jupyterlab-container jupyterlab-debian-latest
