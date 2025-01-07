@@ -26,7 +26,10 @@ EXPOSE 8888
 WORKDIR /mlat_message_decoder
 
 # Copy the test data and the source code into the container
-COPY adsb_raw_data.txt .
+COPY adsb_raw_data.txt /mlat_message_decoder
+
+# Copy the JupyterLab configuration file into the container
+COPY decode_adsb.ipynb /mlat_message_decoder
 
 # Start JupyterLab using the virtual environment
 CMD ["/venv/bin/jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
