@@ -14,10 +14,10 @@ RUN apt-get update && \
 RUN python3 -m venv /venv
 
 # Upgrade pip inside the virtual environment
-RUN /venv/bin/pip install --upgrade pip
+RUN pip install --upgrade pip
 
 # Install JupyterLab inside the virtual environment
-RUN /venv/bin/pip install --no-cache-dir jupyterlab
+RUN pip install --no-cache-dir jupyterlab
 
 # Expose port 8888 for JupyterLab
 EXPOSE 8888
@@ -32,7 +32,7 @@ COPY adsb_raw_data.txt /mlat_message_decoder
 COPY decode_adsb.ipynb /mlat_message_decoder
 
 # Start JupyterLab using the virtual environment
-CMD ["/venv/bin/jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
+CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
 
 # Build the Docker image and run the container
 # docker build -t jupyterlab-debian-latest .
