@@ -79,7 +79,7 @@ Description=RTL-ADSB Logging Service
 After=network.target
 
 [Service]
-ExecStart=rtl_adsb -V >> /etc/rtl_adsb/adsb.log
+ExecStart=rtl_adsb >> /etc/rtl_adsb/adsb.log
 Restart=always
 RestartSec=5
 User=root
