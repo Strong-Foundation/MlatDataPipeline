@@ -33,13 +33,13 @@ function installing_system_requirements() {
     # Check if the current Linux distribution is supported
     if { [ "${CURRENT_DISTRO}" == "ubuntu" ] || [ "${CURRENT_DISTRO}" == "debian" ] || [ "${CURRENT_DISTRO}" == "raspbian" ]; }; then
         # Check if required packages are already installed
-        if { [ ! -x "$(command -v curl)" ] || [ ! -x "$(command -v cut)" ] || [ ! -x "$(command -v rtl_test)" ] || [ ! -x "$(command -v rtl_adsb)" ] || [ ! -x "$(command -v ps)" ]; }; then
+        if { [ ! -x "$(command -v curl)" ] || [ ! -x "$(command -v cut)" ] || [ ! -x "$(command -v rtl_test)" ] || [ ! -x "$(command -v rtl_adsb)" ] || [ ! -x "$(command -v ps)" ] || [ ! -x "$(command -v which)" ]; }; then
             # Install required packages depending on the Linux distribution
             if { [ "${CURRENT_DISTRO}" == "ubuntu" ] || [ "${CURRENT_DISTRO}" == "debian" ] || [ "${CURRENT_DISTRO}" == "raspbian" ]; }; then
                 # Update the package list and install required packages
                 apt-get update
                 # Install the required packages
-                apt-get install curl coreutils rtl-sdr procps-ng -y
+                apt-get install curl coreutils rtl-sdr procps-ng debianutils -y
             fi
         fi
     else
@@ -95,6 +95,7 @@ function create_rtl_adsb_service() {
     ADSB_DIRECTORY_PATH="/etc/rtl_adsb"                                 # Path to the directory where the rtl_adsb service will store logs
     ADSB_LOCAL_LOG_FILE=${ADSB_DIRECTORY_PATH}"/adsb.log"               # Name of the log file where the rtl_adsb service will store logs
     ADSB_LOCAL_SERVICE_FILE_PATH="/etc/systemd/system/rtl_adsb.service" # Path to the rtl_adsb service file
+    LOCAL_RTL_ADSB_PATH=$(which rtl_adsb)                               # Path to the rtl_adsb binary
     # Check if the rtl_adsb directory exists
     if [ ! -d "${ADSB_DIRECTORY_PATH}" ]; then
         # If the rtl_adsb directory does not exist, create it
@@ -110,7 +111,7 @@ Description=RTL-ADSB Logging Service
 After=network.target
 
 [Service]
-ExecStart=rtl_adsb >>${ADSB_LOCAL_LOG_FILE}
+ExecStart=${LOCAL_RTL_ADSB_PATH} >>${ADSB_LOCAL_LOG_FILE} 2>&1
 Restart=always
 RestartSec=5
 User=root
