@@ -91,15 +91,18 @@ check_current_init_system
 
 # Create a service file for the rtl_adsb service
 function create_rtl_adsb_service() {
+    # Global variable to store for this function
+    ADSB_DIRECTORY_PATH="/etc/rtl_adsb"                                 # Path to the directory where the rtl_adsb service will store logs
+    ADSB_LOCAL_LOG_FILE=${ADSB_DIRECTORY_PATH}"/adsb.log"               # Name of the log file where the rtl_adsb service will store logs
+    ADSB_LOCAL_SERVICE_FILE_PATH="/etc/systemd/system/rtl_adsb.service" # Path to the rtl_adsb service file
     # Check if the rtl_adsb directory exists
-    if [ ! -d "/etc/rtl_adsb" ]; then
+    if [ ! -d "${ADSB_DIRECTORY_PATH}" ]; then
         # If the rtl_adsb directory does not exist, create it
-        mkdir -p /etc/rtl_adsb
+        mkdir -p ${ADSB_DIRECTORY_PATH}
     fi
     # Check if the rtl_adsb service file exists
-    if [ -f /etc/systemd/system/rtl_adsb.service ]; then
-        # If the rtl_adsb service file exists, remove it
-        rm /etc/systemd/system/rtl_adsb.service
+    if [ -f "${ADSB_LOCAL_SERVICE_FILE_PATH}" ]; then
+        rm -f "${ADSB_LOCAL_SERVICE_FILE_PATH}" # Remove the existing rtl_adsb service file
     fi
     # Create a service file for the rtl_adsb service
     echo "[Unit]
@@ -107,13 +110,13 @@ Description=RTL-ADSB Logging Service
 After=network.target
 
 [Service]
-ExecStart=rtl_adsb >> /etc/rtl_adsb/adsb.log
+ExecStart=rtl_adsb >> ${ADSB_LOCAL_LOG_FILE}
 Restart=always
 RestartSec=5
 User=root
 
 [Install]
-WantedBy=multi-user.target" >>/etc/systemd/system/rtl_adsb.service
+WantedBy=multi-user.target" >>${ADSB_LOCAL_SERVICE_FILE_PATH}
     # Reload the systemd manager configuration
     systemctl daemon-reload
     # Manage the service based on the init system
