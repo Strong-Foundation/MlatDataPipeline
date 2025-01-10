@@ -110,7 +110,7 @@ Description=RTL-ADSB Logging Service
 After=network.target
 
 [Service]
-ExecStart=rtl_adsb >> ${ADSB_LOCAL_LOG_FILE}
+ExecStart=rtl_adsb >>${ADSB_LOCAL_LOG_FILE}
 Restart=always
 RestartSec=5
 User=root
