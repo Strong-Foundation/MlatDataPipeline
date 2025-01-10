@@ -97,10 +97,21 @@ function create_rtl_adsb_service() {
     ADSB_LOCAL_SERVICE_FILE_PATH="/etc/systemd/system/rtl_adsb.service" # Path to the rtl_adsb service file
     LOCAL_RTL_ADSB_PATH=$(which rtl_adsb)                               # Path to the rtl_adsb binary
     # Check if the rtl_adsb directory exists
-    if [ ! -d "${ADSB_DIRECTORY_PATH}" ]; then
-        # If the rtl_adsb directory does not exist, create it
-        mkdir -p ${ADSB_DIRECTORY_PATH}
+    if [ -d "${ADSB_DIRECTORY_PATH}" ]; then
+        rm -rf "${ADSB_DIRECTORY_PATH}" # Remove the existing rtl_adsb directory
     fi
+    # If the rtl_adsb directory does not exist, create it
+    mkdir -p ${ADSB_DIRECTORY_PATH}
+    # Change the ownership of the rtl_adsb directory to root
+    chown root:root ${ADSB_DIRECTORY_PATH}
+    # Write the empty log file
+    touch ${ADSB_LOCAL_LOG_FILE}
+    # Change the ownership of the log file to root
+    chown root:root ${ADSB_LOCAL_LOG_FILE}
+    # Change the permissions of the log file to 644
+    chmod 644 ${ADSB_LOCAL_LOG_FILE}
+    # Change the ownership of directory to be accessible and executable by everyone
+    chmod 755 ${ADSB_DIRECTORY_PATH}
     # Check if the rtl_adsb service file exists
     if [ -f "${ADSB_LOCAL_SERVICE_FILE_PATH}" ]; then
         rm -f "${ADSB_LOCAL_SERVICE_FILE_PATH}" # Remove the existing rtl_adsb service file
