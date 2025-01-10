@@ -129,4 +129,4 @@ WantedBy=multi-user.target" >>${ADSB_LOCAL_SERVICE_FILE_PATH}
 }
 
 # Call the function to create the rtl_adsb service file
-# create_rtl_adsb_service
+create_rtl_adsb_service
