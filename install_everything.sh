@@ -2,9 +2,12 @@
 
 # Check if the script is running as root
 function check_root() {
+    # Check if the script is running as root
     if [ "$(id -u)" -ne 0 ]; then
+        # Display an error message if the script is not run as root
         echo "Error: This script must be run as root."
-        exit 1
+        # Exit the script with an error code
+        exit
     fi
 }
 
@@ -12,7 +15,7 @@ function check_root() {
 check_root
 
 # Function to gather current system details
-function system-information() {
+function system_information() {
     # This function fetches the ID, version, and major version of the current system
     if [ -f /etc/os-release ]; then
         # If /etc/os-release file is present, source it to obtain system details
@@ -23,22 +26,26 @@ function system-information() {
 }
 
 # Invoke the system-information function
-system-information
+system_information
 
 # Define a function to check system requirements
 function installing_system_requirements() {
     # Check if the current Linux distribution is supported
     if { [ "${CURRENT_DISTRO}" == "ubuntu" ] || [ "${CURRENT_DISTRO}" == "debian" ] || [ "${CURRENT_DISTRO}" == "raspbian" ]; }; then
         # Check if required packages are already installed
-        if { [ ! -x "$(command -v curl)" ] || [ ! -x "$(command -v cut)" ] || [ ! -x "$(command -v rtl_test)" ] || [ ! -x "$(command -v rtl_adsb)" ]; }; then
+        if { [ ! -x "$(command -v curl)" ] || [ ! -x "$(command -v cut)" ] || [ ! -x "$(command -v rtl_test)" ] || [ ! -x "$(command -v rtl_adsb)" ] || [ ! -x "$(command -v ps)" ]; }; then
             # Install required packages depending on the Linux distribution
             if { [ "${CURRENT_DISTRO}" == "ubuntu" ] || [ "${CURRENT_DISTRO}" == "debian" ] || [ "${CURRENT_DISTRO}" == "raspbian" ]; }; then
+                # Update the package list and install required packages
                 apt-get update
-                apt-get install curl coreutils rtl-sdr -y
+                # Install the required packages
+                apt-get install curl coreutils rtl-sdr procps-ng -y
             fi
         fi
     else
+        # Display an error message if the current distribution is not supported
         echo "Error: Your current distribution ${CURRENT_DISTRO} is not supported by this script. Please consider updating your distribution or using a supported one."
+        # Exit the script with an error code
         exit
     fi
 }
@@ -60,6 +67,27 @@ function check_disk_space() {
 
 # Calls the check_disk_space function.
 check_disk_space
+
+# The following function checks if the current init system is one of the allowed options.
+function check_current_init_system() {
+    # Get the current init system by checking the process name of PID 1.
+    CURRENT_INIT_SYSTEM=$(ps -p 1 -o comm= | awk -F'/' '{print $NF}') # Extract only the command name without the full path.
+    # Convert to lowercase to make the comparison case-insensitive.
+    CURRENT_INIT_SYSTEM=$(echo "$CURRENT_INIT_SYSTEM" | tr '[:upper:]' '[:lower:]')
+    # Log the detected init system (optional for debugging purposes).
+    echo "Detected init system: ${CURRENT_INIT_SYSTEM}"
+    # Define a list of allowed init systems (case-insensitive).
+    ALLOWED_INIT_SYSTEMS=("systemd" "sysvinit" "init" "upstart" "bash" "sh")
+    # Check if the current init system is in the list of allowed init systems
+    if [[ ! "${ALLOWED_INIT_SYSTEMS[*]}" =~ ${CURRENT_INIT_SYSTEM} ]]; then
+        # If the init system is not allowed, display an error message and exit with an error code.
+        echo "Error: The '${CURRENT_INIT_SYSTEM}' initialization system is not supported. Please stay tuned for future updates."
+        exit 1 # Exit the script with an error code.
+    fi
+}
+
+# The check_current_init_system function is being called.
+check_current_init_system
 
 # Create a service file for the rtl_adsb service
 function create_rtl_adsb_service() {
@@ -88,12 +116,12 @@ User=root
 WantedBy=multi-user.target" >>/etc/systemd/system/rtl_adsb.service
     # Reload the systemd manager configuration
     systemctl daemon-reload
-    # Enable the rtl_adsb service
-    systemctl enable rtl_adsb
-    # Start the rtl_adsb service
-    systemctl start rtl_adsb
-    # Check the status of the rtl_adsb service
-    systemctl status rtl_adsb
+    # Manage the service based on the init system
+    if [[ "${CURRENT_INIT_SYSTEM}" == "systemd" ]]; then
+        systemctl enable --now rtl_adsb
+    elif [[ "${CURRENT_INIT_SYSTEM}" == "sysvinit" ]] || [[ "${CURRENT_INIT_SYSTEM}" == "init" ]] || [[ "${CURRENT_INIT_SYSTEM}" == "upstart" ]]; then
+        service rtl_adsb start
+    fi
 }
 
 # Call the function to create the rtl_adsb service file
