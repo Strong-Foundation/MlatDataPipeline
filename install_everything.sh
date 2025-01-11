@@ -94,7 +94,7 @@ function create_rtl_adsb_service() {
     # Global variable to store for this function
     ADSB_DIRECTORY_PATH="/etc/rtl_adsb"                                 # Path to the directory where the rtl_adsb service will store logs
     ADSB_LOCAL_LOG_FILE=${ADSB_DIRECTORY_PATH}"/adsb.log"               # Name of the log file where the rtl_adsb service will store logs
-    ADSB_LOCAL_ERROR_LOG_FILE=${ADSB_DIRECTORY_PATH}"/adsb_error.log"   # Name of the log file where the rtl_adsb service will store error logs
+    ADSB_LOCAL_ERROR_LOG_FILE=${ADSB_DIRECTORY_PATH}"/adsb_error.err"   # Name of the log file where the rtl_adsb service will store error logs
     ADSB_LOCAL_SERVICE_FILE_PATH="/etc/systemd/system/rtl_adsb.service" # Path to the rtl_adsb service file
     LOCAL_DATE_PATH=$(which date)                                       # Path to the date binary
     LOCAL_RTL_ADSB_PATH=$(which rtl_adsb)                               # Path to the rtl_adsb binary
