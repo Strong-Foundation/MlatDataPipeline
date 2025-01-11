@@ -133,7 +133,8 @@ WantedBy=multi-user.target" >>${ADSB_LOCAL_SERVICE_FILE_PATH}
     systemctl daemon-reload
     # Manage the service based on the init system
     if [[ "${CURRENT_INIT_SYSTEM}" == "systemd" ]]; then
-        systemctl enable --now rtl_adsb
+        systemctl enable rtl_adsb
+        systemctl start rtl_adsb
     elif [[ "${CURRENT_INIT_SYSTEM}" == "sysvinit" ]] || [[ "${CURRENT_INIT_SYSTEM}" == "init" ]] || [[ "${CURRENT_INIT_SYSTEM}" == "upstart" ]]; then
         service rtl_adsb start
     fi
