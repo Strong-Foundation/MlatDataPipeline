@@ -111,7 +111,6 @@ Description=RTL-ADSB Logging Service
 After=network.target
 
 [Service]
-ExecStartPre=${LOCAL_RM_PATH} -rf ${ADSB_DIRECTORY_PATH}
 ExecStartPre=${LOCAL_MKDIR_PATH} -p ${ADSB_DIRECTORY_PATH}
 ExecStartPre=${LOCAL_CHOWN_PATH} root:root ${ADSB_DIRECTORY_PATH}
 ExecStartPre=${LOCAL_CHMOD_PATH} 755 ${ADSB_DIRECTORY_PATH}
