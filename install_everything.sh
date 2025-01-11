@@ -82,7 +82,7 @@ function check_current_init_system() {
     if [[ ! "${ALLOWED_INIT_SYSTEMS[*]}" =~ ${CURRENT_INIT_SYSTEM} ]]; then
         # If the init system is not allowed, display an error message and exit with an error code.
         echo "Error: The '${CURRENT_INIT_SYSTEM}' initialization system is not supported. Please stay tuned for future updates."
-        exit 1 # Exit the script with an error code.
+        exit # Exit the script with an error code.
     fi
 }
 
