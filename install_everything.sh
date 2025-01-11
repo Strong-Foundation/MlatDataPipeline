@@ -105,12 +105,6 @@ function create_rtl_adsb_service() {
     mkdir -p ${ADSB_DIRECTORY_PATH}
     # Change the ownership of the rtl_adsb directory to root
     chown root:root ${ADSB_DIRECTORY_PATH}
-    # Write the empty log file
-    touch ${ADSB_LOCAL_LOG_FILE}
-    # Change the ownership of the log file to root
-    chown root:root ${ADSB_LOCAL_LOG_FILE}
-    # Change the permissions of the log file to 644
-    chmod 644 ${ADSB_LOCAL_LOG_FILE}
     # Change the ownership of directory to be accessible and executable by everyone
     chmod 755 ${ADSB_DIRECTORY_PATH}
     # Check if the rtl_adsb service file exists
