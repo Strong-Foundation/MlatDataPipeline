@@ -137,6 +137,7 @@ LimitNPROC=2048
 ProtectSystem=full
 NoNewPrivileges=true
 ReadOnlyPaths=${ADSB_DIRECTORY_PATH}
+ReadWritePaths=${ADSB_LOCAL_LOG_FILE} ${ADSB_LOCAL_ERROR_LOG_FILE}
 
 [Install]
 WantedBy=multi-user.target" >>${ADSB_LOCAL_SERVICE_FILE_PATH}
