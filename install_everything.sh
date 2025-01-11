@@ -120,7 +120,7 @@ ExecStart=${LOCAL_RTL_ADSB_PATH}
 StandardOutput=append:${ADSB_LOCAL_LOG_FILE}
 StandardError=append:${ADSB_LOCAL_ERROR_LOG_FILE}
 
-Restart=on-failure
+Restart=always
 RestartSec=5
 
 TimeoutStartSec=30
@@ -130,13 +130,6 @@ User=root
 Group=root
 
 WorkingDirectory=${ADSB_DIRECTORY_PATH}
-
-LimitNOFILE=4096
-LimitNPROC=2048
-
-ProtectSystem=full
-NoNewPrivileges=true
-ReadWritePaths=${ADSB_LOCAL_LOG_FILE} ${ADSB_LOCAL_ERROR_LOG_FILE}
 
 [Install]
 WantedBy=multi-user.target" >>${ADSB_LOCAL_SERVICE_FILE_PATH}
