@@ -122,10 +122,13 @@ Description=RTL-ADSB Logging Service
 After=network.target
 
 [Service]
-ExecStart=${LOCAL_RTL_ADSB_PATH} >>${ADSB_LOCAL_LOG_FILE} 2>&1
+ExecStart=${LOCAL_RTL_ADSB_PATH}
+StandardOutput=append:${ADSB_LOCAL_LOG_FILE}
+StandardError=append:${ADSB_LOCAL_LOG_FILE}
 Restart=always
 RestartSec=5
 User=root
+WorkingDirectory=${ADSB_DIRECTORY_PATH}
 
 [Install]
 WantedBy=multi-user.target" >>${ADSB_LOCAL_SERVICE_FILE_PATH}
