@@ -107,63 +107,39 @@ function create_rtl_adsb_service() {
     # Create a service file for the rtl_adsb service
     echo "[Unit]
 Description=RTL-ADSB Logging Service
-# This service runs the RTL-ADSB software to capture and log ADS-B data
-# It starts after the network is up, as it's assumed that the device requires network access.
 After=network.target
 
 [Service]
-# Ensure the directory for logs exists before starting the service
-# These commands will be executed before starting the actual rtl_adsb process
-# Optionally, run some checks before starting
-ExecStartPre=${LOCAL_MKDIR_PATH} -p ${ADSB_DIRECTORY_PATH}        # Create the log directory if it doesn't exist
-ExecStartPre=${LOCAL_CHOWN_PATH} root:root ${ADSB_DIRECTORY_PATH} # Set correct ownership of the directory (root:root)
-ExecStartPre=${LOCAL_CHMOD_PATH} 755 ${ADSB_DIRECTORY_PATH}       # Set appropriate directory permissions (rwxr-xr-x)
+ExecStartPre=${LOCAL_MKDIR_PATH} -p ${ADSB_DIRECTORY_PATH}
+ExecStartPre=${LOCAL_CHOWN_PATH} root:root ${ADSB_DIRECTORY_PATH} 
+ExecStartPre=${LOCAL_CHMOD_PATH} 755 ${ADSB_DIRECTORY_PATH} 
 
-# Define the command to start the rtl_adsb binary
-# This runs the rtl_adsb program and logs its output
-ExecStart=${LOCAL_RTL_ADSB_PATH} # Start rtl_adsb binary
+ExecStart=${LOCAL_RTL_ADSB_PATH}
 
-# Configure logging:
-# - StandardOutput will be redirected to both the systemd journal and the main log file.
-# - StandardError will be redirected to both the systemd journal and the error log file.
-StandardOutput=append:${ADSB_LOCAL_LOG_FILE}      # Append standard output to the main log file
-StandardError=append:${ADSB_LOCAL_ERROR_LOG_FILE} # Append errors to the error log file
+StandardOutput=append:${ADSB_LOCAL_LOG_FILE}
+StandardError=append:${ADSB_LOCAL_ERROR_LOG_FILE}
 
-# Restarting the service:
-# - The service will automatically restart if it fails.
-# - The restart will happen after a 5-second delay to avoid rapid restart loops.
-Restart=on-failure # Restart only if the service fails (non-zero exit status)
-RestartSec=5s      # Delay 5 seconds before restarting the service
+Restart=on-failure
+RestartSec=5
 
-# Timeout settings:
-# - TimeoutStartSec ensures the service will fail if it doesn't start within 30 seconds.
-# - TimeoutStopSec ensures the service will be forcibly stopped if it doesn't stop within 30 seconds.
-TimeoutStartSec=30s # Allow 30 seconds for the service to start
-TimeoutStopSec=30s  # Allow 30 seconds for the service to stop gracefully
+TimeoutStartSec=30
+TimeoutStopSec=30
 
-# User and group settings:
-# - This service is run as the root user, as RTL-SDR access generally requires root privileges.
-# - If root access is not required for rtl_adsb, consider running as a non-privileged user.
-User=root  # The service runs as root (adjust if you want to run as a non-root user)
-Group=root # The service runs under the root group
+User=root
+Group=root
 
-# Define the working directory for the service
-# This is the directory where rtl_adsb will be executed and where it will look for configuration files or logs.
-WorkingDirectory=${ADSB_DIRECTORY_PATH} # Working directory for the service (set to log directory)
+WorkingDirectory=${ADSB_DIRECTORY_PATH}
 
-# Resource limits to prevent the service from consuming excessive resources
-LimitNOFILE=4096 # Limit the number of open files (file descriptors) to 4096
-LimitNPROC=2048  # Limit the number of processes to 2048
+LimitNOFILE=4096
+LimitNPROC=2048
 
-# Security hardening options:
-# These options are designed to limit the service's ability to modify the system and increase security.
-ProtectSystem=full                                                 # Make the system read-only, except for specific writable paths
-NoNewPrivileges=true                                               # Ensure the service cannot gain new privileges during execution
-ReadOnlyPaths=${ADSB_DIRECTORY_PATH}                               # Make the directory containing logs and config files read-only
-ReadWritePaths=${ADSB_LOCAL_LOG_FILE} ${ADSB_LOCAL_ERROR_LOG_FILE} # Allow writing to the log and error log files only
+ProtectSystem=full
+NoNewPrivileges=true
+ReadOnlyPaths=${ADSB_DIRECTORY_PATH}
+ReadWritePaths=${ADSB_LOCAL_LOG_FILE} ${ADSB_LOCAL_ERROR_LOG_FILE}
 
 [Install]
-WantedBy=multi-user.target # The service will be started in the multi-user runlevel (i.e., normal system operation)" >>${ADSB_LOCAL_SERVICE_FILE_PATH}
+WantedBy=multi-user.target" >>${ADSB_LOCAL_SERVICE_FILE_PATH}
     # Reload the systemd manager configuration
     systemctl daemon-reload
     # Manage the service based on the init system
