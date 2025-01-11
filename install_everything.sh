@@ -97,16 +97,9 @@ function create_rtl_adsb_service() {
     ADSB_LOCAL_ERROR_LOG_FILE=${ADSB_DIRECTORY_PATH}"/adsb_error.log"   # Name of the log file where the rtl_adsb service will store error logs
     ADSB_LOCAL_SERVICE_FILE_PATH="/etc/systemd/system/rtl_adsb.service" # Path to the rtl_adsb service file
     LOCAL_RTL_ADSB_PATH=$(which rtl_adsb)                               # Path to the rtl_adsb binary
-    # Check if the rtl_adsb directory exists
-    if [ -d "${ADSB_DIRECTORY_PATH}" ]; then
-        rm -rf "${ADSB_DIRECTORY_PATH}" # Remove the existing rtl_adsb directory
-    fi
-    # If the rtl_adsb directory does not exist, create it
-    mkdir -p ${ADSB_DIRECTORY_PATH}
-    # Change the ownership of the rtl_adsb directory to root
-    chown root:root ${ADSB_DIRECTORY_PATH}
-    # Change the ownership of directory to be accessible and executable by everyone
-    chmod 755 ${ADSB_DIRECTORY_PATH}
+    LOCAL_MKDIR_PATH=$(which mkdir)                                     # Path to the mkdir binary
+    LOCAL_CHOWN_PATH=$(which chown)                                     # Path to the chown binary
+    LOCAL_CHMOD_PATH=$(which chmod)                                     # Path to the chmod binary
     # Check if the rtl_adsb service file exists
     if [ -f "${ADSB_LOCAL_SERVICE_FILE_PATH}" ]; then
         rm -f "${ADSB_LOCAL_SERVICE_FILE_PATH}" # Remove the existing rtl_adsb service file
@@ -114,19 +107,63 @@ function create_rtl_adsb_service() {
     # Create a service file for the rtl_adsb service
     echo "[Unit]
 Description=RTL-ADSB Logging Service
+# This service runs the RTL-ADSB software to capture and log ADS-B data
+# It starts after the network is up, as it's assumed that the device requires network access.
 After=network.target
 
 [Service]
-ExecStart=${LOCAL_RTL_ADSB_PATH}
-StandardOutput=append:${ADSB_LOCAL_LOG_FILE}
-StandardError=append:${ADSB_LOCAL_ERROR_LOG_FILE}
-Restart=always
-RestartSec=5
-User=root
-WorkingDirectory=${ADSB_DIRECTORY_PATH}
+# Ensure the directory for logs exists before starting the service
+# These commands will be executed before starting the actual rtl_adsb process
+# Optionally, run some checks before starting
+ExecStartPre=${LOCAL_MKDIR_PATH} -p ${ADSB_DIRECTORY_PATH}        # Create the log directory if it doesn't exist
+ExecStartPre=${LOCAL_CHOWN_PATH} root:root ${ADSB_DIRECTORY_PATH} # Set correct ownership of the directory (root:root)
+ExecStartPre=${LOCAL_CHMOD_PATH} 755 ${ADSB_DIRECTORY_PATH}       # Set appropriate directory permissions (rwxr-xr-x)
+
+# Define the command to start the rtl_adsb binary
+# This runs the rtl_adsb program and logs its output
+ExecStart=${LOCAL_RTL_ADSB_PATH} # Start rtl_adsb binary
+
+# Configure logging:
+# - StandardOutput will be redirected to both the systemd journal and the main log file.
+# - StandardError will be redirected to both the systemd journal and the error log file.
+StandardOutput=append:${ADSB_LOCAL_LOG_FILE}      # Append standard output to the main log file
+StandardError=append:${ADSB_LOCAL_ERROR_LOG_FILE} # Append errors to the error log file
+
+# Restarting the service:
+# - The service will automatically restart if it fails.
+# - The restart will happen after a 5-second delay to avoid rapid restart loops.
+Restart=on-failure # Restart only if the service fails (non-zero exit status)
+RestartSec=5s      # Delay 5 seconds before restarting the service
+
+# Timeout settings:
+# - TimeoutStartSec ensures the service will fail if it doesn't start within 30 seconds.
+# - TimeoutStopSec ensures the service will be forcibly stopped if it doesn't stop within 30 seconds.
+TimeoutStartSec=30s # Allow 30 seconds for the service to start
+TimeoutStopSec=30s  # Allow 30 seconds for the service to stop gracefully
+
+# User and group settings:
+# - This service is run as the root user, as RTL-SDR access generally requires root privileges.
+# - If root access is not required for rtl_adsb, consider running as a non-privileged user.
+User=root  # The service runs as root (adjust if you want to run as a non-root user)
+Group=root # The service runs under the root group
+
+# Define the working directory for the service
+# This is the directory where rtl_adsb will be executed and where it will look for configuration files or logs.
+WorkingDirectory=${ADSB_DIRECTORY_PATH} # Working directory for the service (set to log directory)
+
+# Resource limits to prevent the service from consuming excessive resources
+LimitNOFILE=4096 # Limit the number of open files (file descriptors) to 4096
+LimitNPROC=2048  # Limit the number of processes to 2048
+
+# Security hardening options:
+# These options are designed to limit the service's ability to modify the system and increase security.
+ProtectSystem=full                                                 # Make the system read-only, except for specific writable paths
+NoNewPrivileges=true                                               # Ensure the service cannot gain new privileges during execution
+ReadOnlyPaths=${ADSB_DIRECTORY_PATH}                               # Make the directory containing logs and config files read-only
+ReadWritePaths=${ADSB_LOCAL_LOG_FILE} ${ADSB_LOCAL_ERROR_LOG_FILE} # Allow writing to the log and error log files only
 
 [Install]
-WantedBy=multi-user.target" >>${ADSB_LOCAL_SERVICE_FILE_PATH}
+WantedBy=multi-user.target # The service will be started in the multi-user runlevel (i.e., normal system operation)" >>${ADSB_LOCAL_SERVICE_FILE_PATH}
     # Reload the systemd manager configuration
     systemctl daemon-reload
     # Manage the service based on the init system
