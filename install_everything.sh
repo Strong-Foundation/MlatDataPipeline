@@ -136,7 +136,6 @@ LimitNPROC=2048
 
 ProtectSystem=full
 NoNewPrivileges=true
-ReadOnlyPaths=${ADSB_DIRECTORY_PATH}
 ReadWritePaths=${ADSB_LOCAL_LOG_FILE} ${ADSB_LOCAL_ERROR_LOG_FILE}
 
 [Install]
