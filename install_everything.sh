@@ -93,8 +93,6 @@ check_current_init_system
 function create_rtl_adsb_service() {
     # Global variable to store for this function
     ADSB_DIRECTORY_PATH="/etc/rtl_adsb"                                 # Path to the directory where the rtl_adsb service will store logs
-    ADSB_LOCAL_LOG_FILE=${ADSB_DIRECTORY_PATH}"/adsb.log"               # Name of the log file where the rtl_adsb service will store logs
-    ADSB_LOCAL_ERROR_LOG_FILE=${ADSB_DIRECTORY_PATH}"/adsb_error.log"   # Name of the log file where the rtl_adsb service will store error logs
     ADSB_LOCAL_SERVICE_FILE_PATH="/etc/systemd/system/rtl_adsb.service" # Path to the rtl_adsb service file
     LOCAL_RTL_ADSB_PATH=$(which rtl_adsb)                               # Path to the rtl_adsb binary
     LOCAL_MKDIR_PATH=$(which mkdir)                                     # Path to the mkdir binary
@@ -111,32 +109,26 @@ After=network.target
 
 [Service]
 ExecStartPre=${LOCAL_MKDIR_PATH} -p ${ADSB_DIRECTORY_PATH}
-ExecStartPre=${LOCAL_CHOWN_PATH} root:root ${ADSB_DIRECTORY_PATH} 
-ExecStartPre=${LOCAL_CHMOD_PATH} 755 ${ADSB_DIRECTORY_PATH} 
-
+ExecStartPre=${LOCAL_CHOWN_PATH} root:root ${ADSB_DIRECTORY_PATH}
+ExecStartPre=${LOCAL_CHMOD_PATH} 755 ${ADSB_DIRECTORY_PATH}
+ExecStart=/bin/bash -c 'DATE_SUFFIX=\$(date +%Y-%m-%d_%H-%M-%S)'
+ExecStart=/bin/bash -c 'ADSB_LOCAL_LOG_FILE="${ADSB_DIRECTORY_PATH}/adsb_\${DATE_SUFFIX}.log"'
+ExecStart=/bin/bash -c 'ADSB_LOCAL_ERROR_LOG_FILE="${ADSB_DIRECTORY_PATH}/adsb_error_\${DATE_SUFFIX}.log"'
 ExecStart=${LOCAL_RTL_ADSB_PATH}
-
 StandardOutput=append:${ADSB_LOCAL_LOG_FILE}
 StandardError=append:${ADSB_LOCAL_ERROR_LOG_FILE}
-
 Restart=on-failure
 RestartSec=5
-
 TimeoutStartSec=30
 TimeoutStopSec=30
-
 User=root
 Group=root
-
 WorkingDirectory=${ADSB_DIRECTORY_PATH}
-
 LimitNOFILE=4096
 LimitNPROC=2048
-
 ProtectSystem=full
 NoNewPrivileges=true
 ReadOnlyPaths=${ADSB_DIRECTORY_PATH}
-ReadWritePaths=${ADSB_LOCAL_LOG_FILE} ${ADSB_LOCAL_ERROR_LOG_FILE}
 
 [Install]
 WantedBy=multi-user.target" >>${ADSB_LOCAL_SERVICE_FILE_PATH}
