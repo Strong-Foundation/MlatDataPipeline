@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Script Overview:
-# ====================
 # This Bash script is designed to automate the setup and installation process
 # for rtl_adsb, a tool that leverages an RTL-SDR (Software Defined Radio) device
 # to receive and decode ADS-B (Automatic Dependent Surveillance-Broadcast) signals.
@@ -44,7 +43,6 @@
 #    collecting ADS-B data from nearby aircraft.
 #
 # Key Features:
-# --------------
 # - **Compatibility**: The script supports a range of Linux distributions (Ubuntu, Debian, Raspbian) and init systems (systemd,
 #   sysvinit, upstart).
 # - **Automatic Installation**: The script handles the installation of all necessary software dependencies automatically,
