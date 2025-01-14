@@ -24,6 +24,32 @@ services:
     depends_on:
       - elasticsearch # Ensure Kibana starts after Elasticsearch is up and running
 
+  filebeat: # Define the Filebeat service
+    image: docker.elastic.co/beats/filebeat:8.6.2 # Use the official Filebeat image from Docker Hub
+    container_name: filebeat # Set a custom container name for Filebeat
+    user: root # Run Filebeat as root to access log files
+    environment:
+      - FILEBEAT_OUTPUT_LOGSTASH_HOST=logstash:5044 # Send logs to Logstash
+    depends_on:
+      - logstash # Ensure Filebeat starts after Logstash is up and running
+    command: |
+      filebeat -e \
+        -E output.logstash.enabled=true \
+        -E output.logstash.hosts=["logstash:5044"] \
+        -E filebeat.config.modules=path.config=/etc/filebeat/modules.d
+
+  logstash: # Define the Logstash service
+    image: docker.elastic.co/logstash/logstash:8.6.2 # Use the official Logstash image from Docker Hub
+    container_name: logstash # Set a custom container name for Logstash
+    environment:
+      - LOGSTASH_INPUT_BEATS_PORT=5044 # Configure Logstash to listen on port 5044 for Filebeat input
+    ports:
+      - "5044:5044" # Expose port 5044 for Filebeat communication
+    depends_on:
+      - elasticsearch # Ensure Logstash starts after Elasticsearch is up and running
+    command: |
+      logstash -e "input { beats { port => 5044 } } output { elasticsearch { hosts => ['http://elasticsearch:9200'] } }"
+
 volumes:
   esdata: # Define the persistent volume for Elasticsearch data
     driver: local # Use a local driver for the volume (can be changed based on needs)
