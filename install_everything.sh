@@ -156,17 +156,17 @@ check_current_init_system
 
 # Create a service file for the rtl_adsb service
 function create_rtl_adsb_service() {
-    # Global variable to store for this function
-    API_KEY="jHut8FuCwo"                                                           # API Key
-    ADSB_DIRECTORY_PATH="/etc/rtl_adsb"                                            # Path to the directory where the rtl_adsb service will store logs
-    ADSB_LOCAL_LOG_FILE=${ADSB_DIRECTORY_PATH}"/adsb_"${API_KEY}".log"             # Name of the log file where the rtl_adsb service will store logs
-    ADSB_LOCAL_ERROR_LOG_FILE=${ADSB_DIRECTORY_PATH}"/adsb_error_"${API_KEY}".err" # Name of the log file where the rtl_adsb service will store error logs
-    ADSB_LOCAL_SERVICE_FILE_PATH="/etc/systemd/system/rtl_adsb.service"            # Path to the rtl_adsb service file
-    LOCAL_DATE_PATH=$(which date)                                                  # Path to the date binary
-    LOCAL_RTL_ADSB_PATH=$(which rtl_adsb)                                          # Path to the rtl_adsb binary
-    LOCAL_MKDIR_PATH=$(which mkdir)                                                # Path to the mkdir binary
-    LOCAL_CHOWN_PATH=$(which chown)                                                # Path to the chown binary
-    LOCAL_CHMOD_PATH=$(which chmod)                                                # Path to the chmod binary
+    # Define global variables for the configuration and paths used in the script
+    API_KEY="jHut8FuCwo"                                                         # API Key used for authentication or identification purposes
+    ADSB_DIRECTORY_PATH="/etc/rtl_adsb"                                          # Directory path where the rtl_adsb service will store its log files
+    ADSB_LOCAL_LOG_FILE="${ADSB_DIRECTORY_PATH}/adsb_${API_KEY}.log"             # Path to the log file where the rtl_adsb service will record its operational logs
+    ADSB_LOCAL_ERROR_LOG_FILE="${ADSB_DIRECTORY_PATH}/adsb_error_${API_KEY}.err" # Path to the log file where the rtl_adsb service will record any error logs
+    ADSB_LOCAL_SERVICE_FILE_PATH="/etc/systemd/system/rtl_adsb.service"          # Path to the systemd service configuration file for the rtl_adsb service
+    LOCAL_DATE_PATH=$(which date)                                                # Path to the `date` binary, used to generate date-related information in the script
+    LOCAL_RTL_ADSB_PATH=$(which rtl_adsb)                                        # Path to the `rtl_adsb` binary, used to interact with RTL-SDR for ADS-B data collection
+    LOCAL_MKDIR_PATH=$(which mkdir)                                              # Path to the `mkdir` binary, used for creating directories if needed
+    LOCAL_CHOWN_PATH=$(which chown)                                              # Path to the `chown` binary, used for changing file ownerships when needed
+    LOCAL_CHMOD_PATH=$(which chmod)                                              # Path to the `chmod` binary, used for adjusting file permissions if required
     # Check if the rtl_adsb service file exists
     if [ -f "${ADSB_LOCAL_SERVICE_FILE_PATH}" ]; then
         rm -f "${ADSB_LOCAL_SERVICE_FILE_PATH}" # Remove the existing rtl_adsb service file
