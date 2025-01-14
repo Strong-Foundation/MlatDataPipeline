@@ -1,34 +1,29 @@
-version: '3.8'
-
 services:
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.0
-    container_name: elasticsearch
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - bootstrap.memory_lock=true
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+  elasticsearch: # Define the Elasticsearch service
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2 # Use the official Elasticsearch image from Docker Hub
+    container_name: elasticsearch # Set a custom container name for Elasticsearch
+    environment: # Set environment variables for Elasticsearch
+      - discovery.type=single-node # Run Elasticsearch in single-node mode (useful for dev/test)
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m # Limit the Java heap size to 512 MB (adjust based on your system)
+      - xpack.security.enabled=false # Disable security (authentication) in Elasticsearch
     ports:
-      - "9200:9200"
-      - "9300:9300"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.6.0
-    container_name: kibana
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - "9200:9200" # Expose port 9200 for Elasticsearch HTTP API (use to query data)
+      - "9300:9300" # Expose port 9300 for Elasticsearch internal cluster communication
+    volumes:
+      - esdata:/usr/share/elasticsearch/data # Persist Elasticsearch data in a named volume
+
+  kibana: # Define the Kibana service
+    image: docker.elastic.co/kibana/kibana:8.6.2 # Use the official Kibana image from Docker Hub
+    container_name: kibana # Set a custom container name for Kibana
+    environment: # Set environment variables for Kibana
+      - ELASTICSEARCH_URL=http://elasticsearch:9200 # Connect Kibana to the Elasticsearch service
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200 # Ensure Kibana uses the correct Elasticsearch host
+      - xpack.security.enabled=false # Disable security (authentication) in Kibana
     ports:
-      - "5601:5601"
+      - "5601:5601" # Expose port 5601 for the Kibana web interface (default port for accessing Kibana)
     depends_on:
-      elasticsearch:
-        condition: service_healthy
+      - elasticsearch # Ensure Kibana starts after Elasticsearch is up and running
+
+volumes:
+  esdata: # Define the persistent volume for Elasticsearch data
+    driver: local # Use a local driver for the volume (can be changed based on needs)
