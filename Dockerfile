@@ -32,7 +32,8 @@ RUN sudo apt-get update && \
 RUN useradd -ms /bin/bash kibanauser && \
     echo "kibanauser:yourpassword" | chpasswd && \
     mkdir -p /var/log/kibana /run/kibana && \
-    chown -R kibanauser:kibanauser /usr/share/elasticsearch /usr/share/kibana /etc/elasticsearch /etc/kibana /var/log/kibana /run/kibana
+    chown -R kibanauser:kibanauser /usr/share/elasticsearch /usr/share/kibana /etc/elasticsearch /etc/kibana /var/log/kibana /run/kibana && \
+    usermod -aG sudo kibanauser
 
 # Switch to the new user
 USER kibanauser
@@ -42,3 +43,9 @@ EXPOSE 9200 5601
 
 # Start Elasticsearch and Kibana
 CMD ["/bin/bash", "-c", "/usr/share/elasticsearch/bin/elasticsearch & /usr/share/kibana/bin/kibana"]
+
+# Build the image
+# docker build -t elastic-kibana .
+
+# Run the container
+# docker run -p 9200:9200 -p 5601:5601 elastic-kibana
