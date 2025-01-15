@@ -26,7 +26,7 @@ RUN echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://
 
 # Install Elasticsearch and Kibana
 RUN sudo apt-get update && \
-    sudo apt-get install elasticsearch  kibana -y
+    sudo apt-get install elasticsearch kibana -y
 
 # Create a non-root user and set the correct permissions
 RUN useradd -ms /bin/bash kibanauser && \
