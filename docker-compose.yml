@@ -1,51 +1,66 @@
 services:
   # Elasticsearch service definition
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.0 # Pull the official Elasticsearch image version 8.6.0 from the Docker registry
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.0 # Use the official Elasticsearch image, version 8.6.0
     container_name: elasticsearch # Name the container as 'elasticsearch'
     environment:
-      - discovery.type=single-node # Run Elasticsearch in single-node mode (for development or testing)
-      - ELASTIC_PASSWORD=changeme # Set the password for the default 'elastic' user (used for Kibana connection)
+      - "discovery.type=single-node" # Run in single-node mode for development or testing purposes
+      - "xpack.security.enabled=true" #
+      - ELASTIC_PASSWORD=changeme # Set the password for the default 'elastic' user
+
     ulimits:
       memlock:
-        soft: -1 # Disable memory locking for Elasticsearch (avoid memory limits)
+        soft: -1 # Disable memory locking for better performance
         hard: -1
     ports:
-      - 9200:9200 # Map port 9200 of the container to port 9200 on the host (Elasticsearch API access)
+      - 9200:9200 # Expose port 9200 on the host for Elasticsearch API access
+      - 9300:9300 #
     networks:
       - elastic-net # Connect Elasticsearch to the 'elastic-net' network
-    volumes:
-      - elasticsearch-data:/usr/share/elasticsearch/data # Mount the persistent volume to store Elasticsearch data
-
-    # Define a healthcheck to verify if Elasticsearch is up and running
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9200"] # Use curl to check if Elasticsearch is reachable on port 9200
-      interval: 30s # Check every 30 seconds
-      retries: 5 # Retry 5 times before considering the service unhealthy
-      start_period: 30s # Wait for 30 seconds before starting the health check
-      timeout: 10s # Timeout the check after 10 seconds
+      test: ["CMD", "curl", "-f", "http://localhost:9200"] # Check if the cluster health is green
+      interval: 60s # Perform the health check every 60 seconds
+      retries: 10 # Retry the check up to 5 times before marking as unhealthy
+      start_period: 180s # Wait 180 seconds before starting health checks to allow initialization
+      timeout: 30s # Timeout for the health check is 10 seconds
 
   # Kibana service definition
   kibana:
-    image: docker.elastic.co/kibana/kibana:8.6.0 # Pull the official Kibana image version 8.6.0 from the Docker registry
+    image: docker.elastic.co/kibana/kibana:8.6.0 # Use the official Kibana image, version 8.6.0
     container_name: kibana # Name the container as 'kibana'
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200 # Set the URL for Kibana to connect to Elasticsearch
-      - ELASTICSEARCH_PASSWORD=changeme # Provide the password for Elasticsearch (to authenticate Kibana)
+      - "ELASTICSEARCH_HOSTS=http://elasticsearch:9200" # Specify the Elasticsearch URL for Kibana (HTTP)
+      - ELASTICSEARCH_USERNAME=kibana_system # Use the 'kibana_system' user to connect to Elasticsearch
+      - ELASTICSEARCH_PASSWORD=changeme # Password for the 'kibana_system' user
     ports:
-      - 5601:5601 # Map port 5601 of the container to port 5601 on the host (Kibana web interface)
+      - 5601:5601 # Expose port 5601 on the host for accessing Kibana
     networks:
-      - elastic-net # Connect Kibana to the 'elastic-net' network
+      - elastic-net # Connect Kibana to the 'elastic-net' network for Elasticsearch communication
     depends_on:
       elasticsearch:
-        condition: service_healthy # Ensure Kibana starts only after Elasticsearch is healthy and ready to accept connections
+        condition: service_healthy # Start Kibana only after Elasticsearch is healthy
+    restart: on-failure # Ensures Kibana will restart on failure to connect
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5601"] # Check if Kibana is running and reachable
+      interval: 30s # Perform the health check every 30 seconds
+      retries: 5 # Retry the check up to 5 times before marking as unhealthy
+      start_period: 30s # Wait 30 seconds before starting health checks
+      timeout: 10s # Timeout for the health check is 10 seconds
 
-# Network configuration
 networks:
   elastic-net:
-    driver: bridge # Create a bridge network 'elastic-net' for communication between containers
+    driver: bridge # Use a bridge network for internal container communication
 
-# Volume definition for Elasticsearch data persistence
+# Volumes
 volumes:
   elasticsearch-data:
-    driver: local # Use the local Docker volume driver to store data for Elasticsearch
+    driver: local
+
+# Run Services
+# docker-compose up
+
+# Check Logs
+# docker-compose logs -f
+
+# Stop and Remove
+# docker-compose down
