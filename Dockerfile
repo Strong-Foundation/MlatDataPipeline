@@ -14,7 +14,7 @@ RUN apt-get update && \
     apt-get install -f -y
 
 # Install required dependencies
-RUN apt-get install bash sudo wget gpg apt-transport-https curl -y
+RUN apt-get install bash sudo wget gpg apt-transport-https curl coreutils -y
 
 # Import the Elasticsearch PGP Key
 RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | \
