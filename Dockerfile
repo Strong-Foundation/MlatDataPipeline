@@ -28,6 +28,9 @@ RUN echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://
 RUN sudo apt-get update && \
     sudo apt-get install elasticsearch kibana -y
 
+# Modify the Kibana configuration to listen on 0.0.0.0
+RUN sed -i 's/#server.host: "localhost"/server.host: "0.0.0.0"/' /etc/kibana/kibana.yml
+
 # Create a non-root user, set a password, and add to the sudo group
 RUN useradd -ms /bin/bash kibanauser && \
     echo "kibanauser:yourpassword" | chpasswd && \
