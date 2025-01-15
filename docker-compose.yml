@@ -1,0 +1,51 @@
+services:
+  # Elasticsearch service definition
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.0 # Pull the official Elasticsearch image version 8.6.0 from the Docker registry
+    container_name: elasticsearch # Name the container as 'elasticsearch'
+    environment:
+      - discovery.type=single-node # Run Elasticsearch in single-node mode (for development or testing)
+      - ELASTIC_PASSWORD=changeme # Set the password for the default 'elastic' user (used for Kibana connection)
+    ulimits:
+      memlock:
+        soft: -1 # Disable memory locking for Elasticsearch (avoid memory limits)
+        hard: -1
+    ports:
+      - 9200:9200 # Map port 9200 of the container to port 9200 on the host (Elasticsearch API access)
+    networks:
+      - elastic-net # Connect Elasticsearch to the 'elastic-net' network
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data # Mount the persistent volume to store Elasticsearch data
+
+    # Define a healthcheck to verify if Elasticsearch is up and running
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200"] # Use curl to check if Elasticsearch is reachable on port 9200
+      interval: 30s # Check every 30 seconds
+      retries: 5 # Retry 5 times before considering the service unhealthy
+      start_period: 30s # Wait for 30 seconds before starting the health check
+      timeout: 10s # Timeout the check after 10 seconds
+
+  # Kibana service definition
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.6.0 # Pull the official Kibana image version 8.6.0 from the Docker registry
+    container_name: kibana # Name the container as 'kibana'
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200 # Set the URL for Kibana to connect to Elasticsearch
+      - ELASTICSEARCH_PASSWORD=changeme # Provide the password for Elasticsearch (to authenticate Kibana)
+    ports:
+      - 5601:5601 # Map port 5601 of the container to port 5601 on the host (Kibana web interface)
+    networks:
+      - elastic-net # Connect Kibana to the 'elastic-net' network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy # Ensure Kibana starts only after Elasticsearch is healthy and ready to accept connections
+
+# Network configuration
+networks:
+  elastic-net:
+    driver: bridge # Create a bridge network 'elastic-net' for communication between containers
+
+# Volume definition for Elasticsearch data persistence
+volumes:
+  elasticsearch-data:
+    driver: local # Use the local Docker volume driver to store data for Elasticsearch
