@@ -5,9 +5,7 @@ services:
     container_name: elasticsearch # Name the container as 'elasticsearch'
     environment:
       - "discovery.type=single-node" # Run in single-node mode for development or testing purposes
-      - "xpack.security.enabled=true" #
-      - ELASTIC_PASSWORD=changeme # Set the password for the default 'elastic' user
-
+      - "xpack.security.enabled=false" # Disable security features (authentication)
     ulimits:
       memlock:
         soft: -1 # Disable memory locking for better performance
@@ -30,8 +28,6 @@ services:
     container_name: kibana # Name the container as 'kibana'
     environment:
       - "ELASTICSEARCH_HOSTS=http://elasticsearch:9200" # Specify the Elasticsearch URL for Kibana (HTTP)
-      - ELASTICSEARCH_USERNAME=kibana_system # Use the 'kibana_system' user to connect to Elasticsearch
-      - ELASTICSEARCH_PASSWORD=changeme # Password for the 'kibana_system' user
     ports:
       - 5601:5601 # Expose port 5601 on the host for accessing Kibana
     networks:
