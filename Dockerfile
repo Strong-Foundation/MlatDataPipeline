@@ -14,7 +14,7 @@ RUN apt-get update && \
     apt-get install -f -y
 
 # Install required dependencies
-RUN apt-get install bash sudo wget gpg apt-transport-https curl coreutils -y
+RUN apt-get install bash sudo wget gpg apt-transport-https curl coreutils nano -y
 
 # Import the Elasticsearch PGP Key
 RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | \
@@ -31,10 +31,12 @@ RUN sudo apt-get update && \
 # Create a non-root user, set a password, and add to the sudo group
 RUN useradd -ms /bin/bash kibanauser && \
     echo "kibanauser:yourpassword" | chpasswd && \
-    mkdir -p /var/log/kibana /run/kibana && \
-    chown -R kibanauser:kibanauser /usr/share/elasticsearch /usr/share/kibana /etc/elasticsearch /etc/kibana /var/log/kibana && \
     usermod -aG sudo kibanauser && \
-    chmod -R 755 /etc/default/elasticsearch
+    mkdir -p /var/log/elasticsearch && \
+    mkdir -p /var/log/kibana /run/kibana && \
+    chown -R kibanauser:kibanauser /usr/share/elasticsearch /var/lib/elasticsearch /var/log/elasticsearch /etc/default/elasticsearch && \
+    chown -R kibanauser:kibanauser /usr/share/kibana /etc/elasticsearch /etc/kibana /var/log/kibana /run/kibana && \
+    chmod -R 755 /etc/default/elasticsearch /run/kibana
 
 # Switch to the new user
 USER kibanauser
