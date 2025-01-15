@@ -1,56 +1,89 @@
 services:
   # Elasticsearch service definition
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.0 # Use the official Elasticsearch image, version 8.6.0
-    container_name: elasticsearch # Name the container as 'elasticsearch'
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.0 # Use the official Elasticsearch image from Elastic
+    container_name: elasticsearch # Set the container name to 'elasticsearch'
     environment:
-      - "discovery.type=single-node" # Run in single-node mode for development or testing purposes
-      - "xpack.security.enabled=false" # Disable security features (authentication)
+      - "discovery.type=single-node" # Configure Elasticsearch as a single-node cluster
+      - "xpack.security.enabled=false" # Disable security features (adjust as needed for production)
     ulimits:
       memlock:
-        soft: -1 # Disable memory locking for better performance
-        hard: -1
+        soft: -1 # Allow unlimited memory lock for Elasticsearch
+        hard: -1 # Allow unlimited memory lock for Elasticsearch
     ports:
-      - 9200:9200 # Expose port 9200 on the host for Elasticsearch API access
-      - 9300:9300 #
+      - 9200:9200 # Expose Elasticsearch HTTP port to the host
+      - 9300:9300 # Expose Elasticsearch internal transport port to the host
     networks:
-      - elastic-net # Connect Elasticsearch to the 'elastic-net' network
+      - elastic-net # Attach Elasticsearch to the 'elastic-net' network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9200"] # Check if the cluster health is green
-      interval: 60s # Perform the health check every 60 seconds
-      retries: 10 # Retry the check up to 5 times before marking as unhealthy
-      start_period: 180s # Wait 180 seconds before starting health checks to allow initialization
-      timeout: 30s # Timeout for the health check is 10 seconds
+      test: ["CMD", "curl", "-f", "http://localhost:9200"] # Check if Elasticsearch is responding
+      interval: 60s # Run health check every 60 seconds
+      retries: 10 # Retry 10 times before considering the service unhealthy
+      start_period: 180s # Wait 3 minutes before starting health checks
+      timeout: 30s # Timeout for each health check to 30 seconds
 
   # Kibana service definition
   kibana:
-    image: docker.elastic.co/kibana/kibana:8.6.0 # Use the official Kibana image, version 8.6.0
-    container_name: kibana # Name the container as 'kibana'
+    image: docker.elastic.co/kibana/kibana:8.6.0 # Use the official Kibana image from Elastic
+    container_name: kibana # Set the container name to 'kibana'
     environment:
-      - "ELASTICSEARCH_HOSTS=http://elasticsearch:9200" # Specify the Elasticsearch URL for Kibana (HTTP)
+      - "ELASTICSEARCH_HOSTS=http://elasticsearch:9200" # Set the connection URL for Elasticsearch
     ports:
-      - 5601:5601 # Expose port 5601 on the host for accessing Kibana
+      - 5601:5601 # Expose Kibana web interface port to the host
     networks:
-      - elastic-net # Connect Kibana to the 'elastic-net' network for Elasticsearch communication
+      - elastic-net # Attach Kibana to the 'elastic-net' network
     depends_on:
       elasticsearch:
-        condition: service_healthy # Start Kibana only after Elasticsearch is healthy
-    restart: on-failure # Ensures Kibana will restart on failure to connect
+        condition: service_healthy # Ensure Elasticsearch is healthy before starting Kibana
+    restart: on-failure # Restart Kibana on failure
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5601"] # Check if Kibana is running and reachable
-      interval: 30s # Perform the health check every 30 seconds
-      retries: 5 # Retry the check up to 5 times before marking as unhealthy
+      test: ["CMD", "curl", "-f", "http://localhost:5601"] # Check if Kibana is responsive
+      interval: 30s # Run health check every 30 seconds
+      retries: 5 # Retry 5 times before considering the service unhealthy
       start_period: 30s # Wait 30 seconds before starting health checks
-      timeout: 10s # Timeout for the health check is 10 seconds
+      timeout: 10s # Timeout for each health check to 10 seconds
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.6.0 # Use the official Logstash image from Elastic
+    container_name: logstash # Set the container name to 'logstash'
+    ports:
+      - "5044:5044" # Expose Logstash Beats input port to the host
+    volumes:
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf # Mount your custom Logstash config
+    networks:
+      - elastic-net # Attach Logstash to the 'elastic-net' network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy # Ensure Elasticsearch is healthy before starting Logstash
+    restart: on-failure # Restart Logstash on failure
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9600/_node/pipelines"] # Check if Logstash pipelines are ready
+      interval: 30s # Run health check every 30 seconds
+      retries: 5 # Retry 5 times before considering the service unhealthy
+      start_period: 60s # Wait 60 seconds before starting health checks
+      timeout: 10s # Timeout for each health check to 10 seconds
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.6.0 # Use the official Filebeat image from Elastic
+    container_name: filebeat # Set the container name to 'filebeat'
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml # Mount your custom Filebeat config
+      - /var/log:/var/log # Mount log directory for Filebeat to access
+    networks:
+      - elastic-net # Attach Filebeat to the 'elastic-net' network
+    depends_on:
+      logstash:
+        condition: service_healthy # Ensure Logstash is healthy before starting Filebeat
+    restart: on-failure # Restart Filebeat on failure
 
 networks:
   elastic-net:
-    driver: bridge # Use a bridge network for internal container communication
+    driver: bridge # Use the default bridge network driver for inter-container communication
 
 # Volumes
 volumes:
   elasticsearch-data:
-    driver: local
+    driver: local # Use the local volume driver for persistent Elasticsearch data storage
 
 # Run Services
 # docker-compose up
