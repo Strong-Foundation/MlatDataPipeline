@@ -14,12 +14,7 @@ RUN apt-get update && \
     apt-get install -f -y
 
 # Install required dependencies
-RUN apt-get install bash -y && \
-    apt-get install sudo -y && \
-    apt-get install wget -y && \
-    apt-get install gpg -y && \
-    apt-get install apt-transport-https -y && \
-    apt-get install curl -y
+RUN apt-get install bash sudo wget gpg apt-transport-https curl -y
 
 # Import the Elasticsearch PGP Key
 RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | \
@@ -29,13 +24,9 @@ RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | \
 RUN echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | \
     tee /etc/apt/sources.list.d/elastic-8.x.list
 
-# Install Elasticsearch
+# Install Elasticsearch and Kibana
 RUN sudo apt-get update && \
-    sudo apt-get install elasticsearch -y
-
-# Install Kibana
-RUN sudo apt-get update && \
-    sudo apt-get install kibana -y
+    sudo apt-get install elasticsearch  kibana -y
 
 # Create a non-root user and set the correct permissions
 RUN useradd -ms /bin/bash kibanauser && \
