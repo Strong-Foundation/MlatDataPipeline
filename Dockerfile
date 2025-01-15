@@ -28,12 +28,13 @@ RUN echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://
 RUN sudo apt-get update && \
     sudo apt-get install elasticsearch kibana -y
 
-# Create a non-root user and set the correct permissions
+# Create a non-root user, set a password, and add to the sudo group
 RUN useradd -ms /bin/bash kibanauser && \
     echo "kibanauser:yourpassword" | chpasswd && \
     mkdir -p /var/log/kibana /run/kibana && \
-    chown -R kibanauser:kibanauser /usr/share/elasticsearch /usr/share/kibana /etc/elasticsearch /etc/kibana /var/log/kibana /run/kibana && \
-    usermod -aG sudo kibanauser
+    chown -R kibanauser:kibanauser /usr/share/elasticsearch /usr/share/kibana /etc/elasticsearch /etc/kibana /var/log/kibana && \
+    usermod -aG sudo kibanauser && \
+    chmod -R 755 /etc/default/elasticsearch
 
 # Switch to the new user
 USER kibanauser
