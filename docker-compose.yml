@@ -49,7 +49,7 @@ services:
     ports:
       - "5044:5044" # Expose Logstash Beats input port to the host
     volumes:
-      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf # Mount your custom Logstash config
+      - ./config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf # Mount your custom Logstash config
     networks:
       - elastic-net # Attach Logstash to the 'elastic-net' network
     depends_on:
@@ -67,7 +67,7 @@ services:
     image: docker.elastic.co/beats/filebeat:8.6.0 # Use the official Filebeat image from Elastic
     container_name: filebeat # Set the container name to 'filebeat'
     volumes:
-      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml # Mount your custom Filebeat config
+      - ./config/filebeat.yml:/usr/share/filebeat/filebeat.yml # Mount your custom Filebeat config
       - /var/log:/var/log # Mount log directory for Filebeat to access
     networks:
       - elastic-net # Attach Filebeat to the 'elastic-net' network
