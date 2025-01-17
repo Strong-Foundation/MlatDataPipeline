@@ -7,4 +7,4 @@ filebeat.inputs:
     fields_under_root: true
 
 output.logstash:
-  hosts: ["logstash:5044"]
+  hosts: ["127.0.0.1:5044"]
