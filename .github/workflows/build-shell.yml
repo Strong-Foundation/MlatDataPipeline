@@ -1,17 +1,25 @@
 name: Run Shell Script # Name of the GitHub Actions workflow
 
 on:
-  schedule:
-    - cron: "0 0 * * 0" # Run the workflow every Sunday at 00:00 UTC
-  workflow_dispatch: # Allows manual execution from GitHub UI
+  # Trigger the workflow on changes to any .sh file
+  push:
+    paths:
+      - "**/*.sh" # Triggers when any .sh file in the repository changes
+
+  workflow_dispatch: # Allows manual execution of the workflow from GitHub UI
 
 jobs:
   run-script:
     runs-on: ubuntu-latest # Use the latest Ubuntu runner
 
-    steps:
-      - name: Checkout repository # Fetch the repository content onto the runner
-        uses: actions/checkout@v4
+    env:
+      SCRIPT_NAME: install_everything.sh # Define the script name in an environment variable
 
-      - name: Run the shell script # Execute the shell script
-        run: bash install_everything.sh # Runs install_everything.sh using Bash
+    steps:
+      # Step 1: Checkout repository to make the script file available
+      - name: Checkout repository
+        uses: actions/checkout@v4 # Fetch the repository content, including .sh files
+
+      # Step 2: Run the shell script using the environment variable
+      - name: Run the shell script
+        run: bash ${{ env.SCRIPT_NAME }} # Execute the script stored in the SCRIPT_NAME env variable
