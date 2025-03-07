@@ -1,0 +1,17 @@
+name: Run Shell Script # Name of the GitHub Actions workflow
+
+on:
+  schedule:
+    - cron: "0 0 * * 0" # Run the workflow every Sunday at 00:00 UTC
+  workflow_dispatch: # Allows manual execution from GitHub UI
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest # Use the latest Ubuntu runner
+
+    steps:
+      - name: Checkout repository # Fetch the repository content onto the runner
+        uses: actions/checkout@v4
+
+      - name: Run the shell script # Execute the shell script
+        run: bash install_everything.sh # Runs install_everything.sh using Bash
