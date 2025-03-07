@@ -1,12 +1,16 @@
 name: Run Shell Script # Name of the GitHub Actions workflow
 
+# Define the events that trigger the workflow
 on:
-  # Trigger the workflow on changes to any .sh file
+  # Trigger the workflow on push events and pull request events for changes in .sh files
   push:
     paths:
-      - "**/*.sh" # Triggers when any .sh file in the repository changes
-
-  workflow_dispatch: # Allows manual execution of the workflow from GitHub UI
+      - "**.sh"
+  pull_request:
+    paths:
+      - "**.sh"
+  # Allow manual triggering of the workflow
+  workflow_dispatch:
 
 jobs:
   run-script:
