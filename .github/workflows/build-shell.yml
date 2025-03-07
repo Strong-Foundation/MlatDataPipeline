@@ -20,6 +20,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4 # Fetch the repository content, including .sh files
 
-      # Step 2: Run the shell script using the environment variable
+      # Step 2: Install the required dependencies
+      - name: Install dependencies
+        run: sudo apt-get install bash sudo -y # Install the bash shell
+
+      # Step 3: Run the shell script using the environment variable
       - name: Run the shell script
-        run: bash ${{ env.SCRIPT_NAME }} # Execute the script stored in the SCRIPT_NAME env variable
+        run: sudo bash ${{ env.SCRIPT_NAME }} # Execute the script stored in the SCRIPT_NAME env variable
