@@ -13,7 +13,7 @@
 # The script ensures that all necessary system dependencies are installed, including:
 # - RTL-SDR tools: for interfacing with the RTL-SDR hardware.
 # - Core utilities like curl, coreutils, and debianutils: for general-purpose tasks like downloading and system management.
-# - Process management utilities (e.g., procps-ng) for managing system processes.
+# - Process management utilities (e.g., procps) for managing system processes.
 # - System utilities (e.g., ps, which, cut) to check and configure the system environment.
 #
 # The script performs several critical functions to ensure smooth operation:
@@ -100,8 +100,8 @@ function installing_system_requirements() {
             # Update the system's package list to ensure we get the latest versions of packages.
             apt-get update
             # Install the necessary packages: curl (for downloading files), coreutils (basic Unix utilities),
-            # rtl-sdr (for handling RTL-SDR devices), procps-ng (for managing system processes), debianutils.
-            apt-get install curl coreutils rtl-sdr procps-ng debianutils -y
+            # rtl-sdr (for handling RTL-SDR devices), procps (for managing system processes), debianutils.
+            apt-get install curl coreutils rtl-sdr procps debianutils -y
         fi
     else
         # If the system is running an unsupported distribution, print an error message.
